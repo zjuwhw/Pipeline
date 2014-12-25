@@ -1,3 +1,5 @@
+##author: zjuwhw
+##time: 2014-12-25
 import os,sys
 import os.path
 import time
@@ -56,7 +58,12 @@ if __name__ == '__main__':
             print '''\
 This program is used for ChIP-seq data preprocess and alignment by bwa software;
 usage:
-    python chipseq_pipeline.py [srafile or fastqfile or bamfile]'''
+    python chipseq_pipeline.py [srafile or fastqfile or bamfile]
+Notes:
+    The program "bwa","samtools","sratoolkit" must be installed and avaliable in the PATH.
+    The path of reference genome must be set and the bwa index must be bulit.
+'''
+
         else :
             print 'Unknown option.'
         sys.exit()
