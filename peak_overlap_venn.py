@@ -7,6 +7,7 @@ USAGE:
 
 #the input file is 2-5 _p_s.bed peak bed file
 #--output: the output file name. Default: overlap_venn_plot
+#the bedtools must be installed in the PATH, and the VennDiagram package must be instaled in the R software.
 '''
 
 import itertools,os,sys,getopt
