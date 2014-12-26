@@ -1,7 +1,7 @@
 Pipeline
 ========
 
-This is a repository to store the pipeline to analysis microarray, ChIP-seq and RNA-seq in Wang lab.
+This is a repository to store the pipeline to analysis affy microarray, single-end ChIP-seq and pair-end RNA-seq in Wang lab.
 ### ChIP-seq analysis:
 ####required tools:
 *alignment: bwa, bowtie2
