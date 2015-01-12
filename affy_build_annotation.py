@@ -5,8 +5,9 @@ USAGE = '''affy_build_annotation.py --- download annotation files for affy micro
     python %s affy_name("all" means all the affy microarray available)
 
 Notes:
-These affy microarrays are available: "hgu133a","hgu133a2","hgu133b","hgu133plus2","hgu219","hgu95a","hgu95av2","hgu95b","hgu95c","hgu95d","hgu95e"
+These affy microarrays are available: "hgu133a","hgu133a2","hgu133b","hgu133plus2","hgu219","hgu95a","hgu95av2","hgu95b","hgu95c","hgu95d","hgu95e","u133aaofav2"
 The output annoation includes "GeneID", "GeneSymbol", "GeneAccnum", "GeneRefseqid", "GeneEnsemblid", "GeneName"
+All annotation files are built by relative R .db packages, except the array "u133aaofav2", which was transformed from the GEO GPL file and deposits on my github.
 '''
 
 Rcode = '''
@@ -30,7 +31,7 @@ install.packages("%s", repos=NULL)
 install.packages("%s", repos=NULL)
 '''
 
-affys = ["hgu133a","hgu133a2","hgu133b","hgu133plus2","hgu219","hgu95a","hgu95av2","hgu95b","hgu95c","hgu95d","hgu95e"]
+affys = ["hgu133a","hgu133a2","hgu133b","hgu133plus2","hgu219","hgu95a","hgu95av2","hgu95b","hgu95c","hgu95d","hgu95e","u133aaofav2"]
 customcdfname_refseq = {"hgu133a":"HGU133A_Hs_REFSEQ",
                       "hgu133a2":"HGU133A2_Hs_REFSEQ",
                       "hgu133b":"HGU133B_Hs_REFSEQ",
@@ -41,7 +42,8 @@ customcdfname_refseq = {"hgu133a":"HGU133A_Hs_REFSEQ",
                       "hgu95b":"HGU95B_Hs_REFSEQ",
                       "hgu95c":"HGU95C_Hs_REFSEQ",
                       "hgu95d":"HGU95D_Hs_REFSEQ",
-                      "hgu95e":"HGU95E_Hs_REFSEQ"}
+                      "hgu95e":"HGU95E_Hs_REFSEQ",
+                      "u133aaofav2":"U133AAofAv2_Hs_REFSEQ"}
 customcdfname_ensg = {"hgu133a":"HGU133A_Hs_ENSG",
                       "hgu133a2":"HGU133A2_Hs_ENSG",
                       "hgu133b":"HGU133B_Hs_ENSG",
@@ -52,7 +54,8 @@ customcdfname_ensg = {"hgu133a":"HGU133A_Hs_ENSG",
                       "hgu95b":"HGU95B_Hs_ENSG",
                       "hgu95c":"HGU95C_Hs_ENSG",
                       "hgu95d":"HGU95D_Hs_ENSG",
-                      "hgu95e":"HGU95E_Hs_ENSG"}
+                      "hgu95e":"HGU95E_Hs_ENSG",
+                      "u133aaofav2":"U133AAofAv2_Hs_ENSG"}
 customcdfpackage_refseq_url = {"hgu133a":"http://mbni.org/customcdf/19.0.0/refseq.download/hgu133ahsrefseqcdf_19.0.0.tar.gz",
                                "hgu133a2":"http://mbni.org/customcdf/19.0.0/refseq.download/hgu133a2hsrefseqcdf_19.0.0.tar.gz",
                                "hgu133b":"http://mbni.org/customcdf/19.0.0/refseq.download/hgu133bhsrefseqcdf_19.0.0.tar.gz",
@@ -63,7 +66,8 @@ customcdfpackage_refseq_url = {"hgu133a":"http://mbni.org/customcdf/19.0.0/refse
                                "hgu95b":"http://mbni.org/customcdf/19.0.0/refseq.download/hgu95bhsrefseqcdf_19.0.0.tar.gz",
                                "hgu95c":"http://mbni.org/customcdf/19.0.0/refseq.download/hgu95chsrefseqcdf_19.0.0.tar.gz",
                                "hgu95d":"http://mbni.org/customcdf/19.0.0/refseq.download/hgu95dhsrefseqcdf_19.0.0.tar.gz",
-                               "hgu95e":"http://mbni.org/customcdf/19.0.0/refseq.download/hgu95ehsrefseqcdf_19.0.0.tar.gz"}
+                               "hgu95e":"http://mbni.org/customcdf/19.0.0/refseq.download/hgu95ehsrefseqcdf_19.0.0.tar.gz",
+                               "u133aaofav2":"http://mbni.org/customcdf/19.0.0/refseq.download/u133aaofav2hsrefseqcdf_19.0.0.tar.gz"}
 customcdfpackage_ensg_url = {"hgu133a":"http://mbni.org/customcdf/19.0.0/ensg.download/hgu133ahsensgcdf_19.0.0.tar.gz",
                                "hgu133a2":"http://mbni.org/customcdf/19.0.0/ensg.download/hgu133a2hsensgcdf_19.0.0.tar.gz",
                                "hgu133b":"http://mbni.org/customcdf/19.0.0/ensg.download/hgu133bhsensgcdf_19.0.0.tar.gz",
@@ -74,7 +78,8 @@ customcdfpackage_ensg_url = {"hgu133a":"http://mbni.org/customcdf/19.0.0/ensg.do
                                "hgu95b":"http://mbni.org/customcdf/19.0.0/ensg.download/hgu95bhsensgcdf_19.0.0.tar.gz",
                                "hgu95c":"http://mbni.org/customcdf/19.0.0/ensg.download/hgu95chsensgcdf_19.0.0.tar.gz",
                                "hgu95d":"http://mbni.org/customcdf/19.0.0/ensg.download/hgu95dhsensgcdf_19.0.0.tar.gz",
-                               "hgu95e":"http://mbni.org/customcdf/19.0.0/ensg.download/hgu95ehsensgcdf_19.0.0.tar.gz"}
+                               "hgu95e":"http://mbni.org/customcdf/19.0.0/ensg.download/hgu95ehsensgcdf_19.0.0.tar.gz",
+                               "u133aaofav2":"http://mbni.org/customcdf/19.0.0/ensg.download/u133aaofav2hsensgcdf_19.0.0.tar.gz"}
 
 import os,sys,getopt,time
 
@@ -120,7 +125,14 @@ if __name__ == '__main__':
             print ", ".join(affys)
             sys.exit(1)
         else:
-            download_affy(sys.argv[1])
+            if sys.argv[1] != "u133aaofav2":
+                download_affy(sys.argv[1])
+            else:
+                cmd = "wget --no-check-certificate https://github.com/zjuwhw/Pipeline/raw/master/supp_data/hgu133aaofav2_ann.txt.gz"
+                os.system(cmd)
+                cmd2 = "gunzip hgu133aaofav2_ann.txt.gz"
+                os.system(cmd2)
+                os.rename("hgu133aaofav2_ann.txt","u133aaofav2_ann.txt")
             download_customcdfpackage(sys.argv[1])
     
     endtime=time.time()
