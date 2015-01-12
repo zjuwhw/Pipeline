@@ -31,6 +31,9 @@ install.packages("%s", repos=NULL)
 install.packages("%s", repos=NULL)
 '''
 
+Rcode3 = '''
+cat(is.element('%s', installed.packages()[,1]))
+'''
 affys = ["hgu133a","hgu133a2","hgu133b","hgu133plus2","hgu219","hgu95a","hgu95av2","hgu95b","hgu95c","hgu95d","hgu95e","u133aaofav2"]
 customcdfname_refseq = {"hgu133a":"HGU133A_Hs_REFSEQ",
                       "hgu133a2":"HGU133A2_Hs_REFSEQ",
@@ -83,6 +86,19 @@ customcdfpackage_ensg_url = {"hgu133a":"http://mbni.org/customcdf/19.0.0/ensg.do
 
 import os,sys,getopt,time
 
+def ossystemresult(command):
+    fp=os.popen(command,"r")
+    return fp.read()
+
+def check_package(packagename):
+    f = open("check_package.r","w")
+    print >> f, Rcode3 % packagename
+    f.close()
+    cmd = "Rscript check_package.r"
+    Result = ossystemresult(cmd)
+    os.remove("check_package.r")
+    return Result
+   
 def download_affy(affy_name):
     print "The annotation of affy microarray %s is downloading ..." % affy_name
     f = open("affy_download_%s.r" % affy_name, "w")
@@ -125,15 +141,24 @@ if __name__ == '__main__':
             print ", ".join(affys)
             sys.exit(1)
         else:
-            if sys.argv[1] != "u133aaofav2":
-                download_affy(sys.argv[1])
+            if check_package(sys.argv[1]+".db") == "TRUE":
+                print "The annotation of affy microarray %s has been installed" % sys.argv[1]
             else:
-                cmd = "wget --no-check-certificate https://github.com/zjuwhw/Pipeline/raw/master/supp_data/hgu133aaofav2_ann.txt.gz"
-                os.system(cmd)
-                cmd2 = "gunzip hgu133aaofav2_ann.txt.gz"
-                os.system(cmd2)
-                os.rename("hgu133aaofav2_ann.txt","u133aaofav2_ann.txt")
-            download_customcdfpackage(sys.argv[1])
+                if sys.argv[1] != "u133aaofav2":
+                    download_affy(sys.argv[1])
+                else:
+                    cmd = "wget --no-check-certificate https://github.com/zjuwhw/Pipeline/raw/master/supp_data/hgu133aaofav2_ann.txt.gz"
+                    os.system(cmd)
+                    cmd2 = "gunzip hgu133aaofav2_ann.txt.gz"
+                    os.system(cmd2)
+                    os.rename("hgu133aaofav2_ann.txt","u133aaofav2_ann.txt")
+            
+            customcdf_refseq_package_name = customcdfpackage_refseq_url[sys.argv[1]].split("/")[-1].split("_")[0]
+            customcdf_ensg_package_name = customcdfpackage_ensg_url[sys.argv[1]].split("/")[-1].split("_")[0]
+            if check_package(customcdf_ensg_package_name) == "TRUE" and check_package(customcdf_refseq_package_name) == "TRUE":
+                print  "The customcdfpackage of %s has been installed" % sys.argv[1]
+            else:
+                download_customcdfpackage(sys.argv[1])
     
     endtime=time.time()
     print "it takes %d seconds or %d minutes or %d hours to run this program!" % (endtime-starttime, (endtime-starttime)/60, (endtime-starttime)/3600)
