@@ -7,13 +7,13 @@ USAGE:
 
 Default:
 --output is the basename of cel_RAW_dictionary
-These affy microarrays are available: "hgu133a","hgu133a2","hgu133b","hgu133plus2","hgu219","hgu95a","hgu95av2","hgu95b","hgu95c","hgu95d","hgu95e"
+These affy microarrays are available: "hgu133a","hgu133a2","hgu133b","hgu133plus2","hgu219","hgu95a","hgu95av2","hgu95b","hgu95c","hgu95d","hgu95e","u133aaofav2"
 --ann_affy_path is the path of affy annotation. The affy annoation can be built using another python program "affy_build_annotation.py". The default ann_affy_path is "/c/wanghw/annotation/affy/" and ends with "_ann.txt"
 --ann_refseq_bed12 is the path of refseq bed12 annotation files, which could be downloaded from ucsc website. The default path is "/c/wanghw/annotation/refseq_hg19_07292013.bed"
 '''
 import os,sys,getopt,time
 
-affys = ["hgu133a","hgu133a2","hgu133b","hgu133plus2","hgu219","hgu95a","hgu95av2","hgu95b","hgu95c","hgu95d","hgu95e"]
+affys = ["hgu133a","hgu133a2","hgu133b","hgu133plus2","hgu219","hgu95a","hgu95av2","hgu95b","hgu95c","hgu95d","hgu95e","u133aaofav2"]
 customcdfname_refseq = {"hgu133a":"HGU133A_Hs_REFSEQ",
                       "hgu133a2":"HGU133A2_Hs_REFSEQ",
                       "hgu133b":"HGU133B_Hs_REFSEQ",
@@ -24,7 +24,8 @@ customcdfname_refseq = {"hgu133a":"HGU133A_Hs_REFSEQ",
                       "hgu95b":"HGU95B_Hs_REFSEQ",
                       "hgu95c":"HGU95C_Hs_REFSEQ",
                       "hgu95d":"HGU95D_Hs_REFSEQ",
-                      "hgu95e":"HGU95E_Hs_REFSEQ"}
+                      "hgu95e":"HGU95E_Hs_REFSEQ",
+                      "u133aaofav2":"U133AAofAv2_Hs_REFSEQ"}
 customcdfname_ensg = {"hgu133a":"HGU133A_Hs_ENSG",
                       "hgu133a2":"HGU133A2_Hs_ENSG",
                       "hgu133b":"HGU133B_Hs_ENSG",
@@ -35,7 +36,8 @@ customcdfname_ensg = {"hgu133a":"HGU133A_Hs_ENSG",
                       "hgu95b":"HGU95B_Hs_ENSG",
                       "hgu95c":"HGU95C_Hs_ENSG",
                       "hgu95d":"HGU95D_Hs_ENSG",
-                      "hgu95e":"HGU95E_Hs_ENSG"}
+                      "hgu95e":"HGU95E_Hs_ENSG",
+                      "u133aaofav2":"U133AAofAv2_Hs_ENSG"}
 
 
 def cel2txt(cel_raw_dir, affy_type, name):
