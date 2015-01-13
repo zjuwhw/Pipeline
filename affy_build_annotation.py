@@ -132,7 +132,14 @@ if __name__ == '__main__':
         sys.exit(1)
     if sys.argv[1] == "all":
         for affy in affys:
-            download_affy(affy)
+            if affy != "u133aaofav2":
+                download_affy(affy)
+            else:
+                cmd = "wget --no-check-certificate https://github.com/zjuwhw/Pipeline/raw/master/supp_data/hgu133aaofav2_ann.txt.gz"
+                os.system(cmd)
+                cmd2 = "gunzip hgu133aaofav2_ann.txt.gz"
+                os.system(cmd2)
+                os.rename("hgu133aaofav2_ann.txt","u133aaofav2_ann.txt")
             download_customcdfpackage(affy)
     else:
         if sys.argv[1] not in affys:
