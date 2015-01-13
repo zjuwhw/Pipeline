@@ -14,15 +14,14 @@ Rcode = '''
 source("http://bioconductor.org/biocLite.R")
 biocLite("%s.db")
 library(%s.db)
-id = keys(%sCHR)
+id = keys(%s.db)
 GeneId = unlist(as.list(%sENTREZID[id]))
 GeneSymbol = unlist(as.list(%sSYMBOL[id]))
 GeneAccnum = unlist(as.list(%sACCNUM[id]))
 GeneRefseqid = sapply(as.list(%sREFSEQ[id]), function(x) x[1])
 GeneEnsemblid = sapply(as.list(%sENSEMBL[id]), function(x) x[1])
 GeneName = unlist(as.list(%sGENENAME[id]))
-data = cbind(GeneId, GeneSymbol, GeneAccnum, GeneRefseqid, GeneEnsemblid, GeneName)
-data = cbind(ProbeId = rownames(data), data)
+data = cbind(ProbeId = id, GeneId, GeneSymbol, GeneAccnum, GeneRefseqid, GeneEnsemblid, GeneName)
 write.table(data, "%s_ann.txt", quote=F, sep="\t", row.names=F)
 '''
 
