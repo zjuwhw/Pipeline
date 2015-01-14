@@ -106,7 +106,7 @@ if __name__ == '__main__':
     opts, args = getopt.getopt(sys.argv[1:], "", ["affyname=","output=","ann_affy_path=","ann_refseq_bed12="])
     # defaults
     ann_refseq_bed12 = "/c/wanghw/annotation/refseq_hg19_07292013.bed"
-    cel_raw_dir = args[0]
+    cel_raw_dir = args[0].rstrip("/")
     nname = os.path.basename(cel_raw_dir)
     for o,a in opts:
         if o == '--affyname':
