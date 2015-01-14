@@ -114,6 +114,11 @@ if __name__ == '__main__':
             ann_affy_path = "/c/wanghw/annotation/affy/%s_ann.txt" % naffyname
         elif o == '--output':
             nname = a
+        elif o == '--ann_affy_path':
+            ann_affy_path = a
+        elif o == '--ann_refseq_bed12':
+            ann_refseq_bed12 = a
+            
     
     if naffyname not in affys:
         print "The %s is not in the list as below:" % naffyname
