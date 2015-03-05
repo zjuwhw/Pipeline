@@ -10,7 +10,7 @@ USAGE:
  #--motif_db /c/wanghw/motif_database/Transfect_9.2.meme 
  #--output the real name of _p_s.bed file name
  #--sequence /d/database/hg19/hg19.fa.masked
- #--d 200bp
+ #--d 200bp, when d is "fulllength" means using amd and peak full length
  #optional:
   For meme-chip: -meme-nmotifs 5 -meme-minw 6 -meme-maxw 20 
   For homer: -mask -S 20 -len 8,10,12,14 -p 4 -size 200
@@ -41,6 +41,16 @@ def getfasta_centor(psfp, d, sequence):
 		print >>tmpbedfp,"%s\t%s\t%s\t%s" % (linelist[0],str(int(linelist[4])-1),linelist[4],linelist[3])
 	tmpbedfp.close()
 	cmd="bedtools slop -i tmp.bed -g /c/wanghw/annotation/hg19.genome -b %d|bedtools getfasta -fi %s -bed - -fo tmp.fa" %(int(d/2), sequence)
+	os.system(cmd)
+	os.remove("tmp.bed")
+def getfasta_fulllength(psfp, sequence):
+	psfp.seek(0)
+	tmpbedfp=open("tmp.bed","w")
+	for line in psfp:
+		linelist=line.rstrip().split("\t")
+		print >>tmpbedfp,"%s\t%s\t%s\t%s" % (linelist[0],linelist[1],linelist[2],linelist[3])
+	tmpbedfp.close()
+	cmd="bedtools getfasta -fi %s -bed %s -fo tmp.fa" %(sequence, "tmp.bed")
 	os.system(cmd)
 	os.remove("tmp.bed")
 def getfasta_region(psfp):
@@ -134,19 +144,25 @@ if __name__ == '__main__':
 		elif o=='--output':
 			name  =a +"_"+tools+"_output"
 		elif o=='--d' :
-			d = int(a)
+			d = a
 	psfp = open(args[0])
 	if len(args) !=1 :
 		optional = " ".join(args[1:])
 		
 	if tools == "meme-chip":
+		d = int(d)
 		getfasta_centor(psfp, d, sequence)
 		meme_chip(name, motif_db, optional)
 	elif tools == "homer":
+		d = int(d)
 		getbed_centor(psfp, d)
 		homer_findMotifsGenome(name, optional)
 	elif tools == "amd":
-		getfasta_centor(psfp, d, sequence)
+		if d == "fullength":
+		    getfasta_fulllength(psfp, sequence)
+		else:
+		    d = int(d)
+		    getfasta_centor(psfp, d, sequence)
 		amd(name, optional, motif_db)
 		
 	endtime=time.time()
