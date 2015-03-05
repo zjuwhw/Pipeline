@@ -158,7 +158,7 @@ if __name__ == '__main__':
 		getbed_centor(psfp, d)
 		homer_findMotifsGenome(name, optional)
 	elif tools == "amd":
-		if d == "fullength":
+		if d == "fulllength":
 		    getfasta_fulllength(psfp, sequence)
 		else:
 		    d = int(d)
