@@ -107,7 +107,7 @@ if __name__ == '__main__':
             ntype = a
             npvalue = def_pval[a]
         elif o == '--pvalue':
-            npvalue = int(a)
+            npvalue = a
         elif o == '--output':
             nname = a
         elif o == '--chromsize':
