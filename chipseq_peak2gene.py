@@ -162,6 +162,7 @@ if __name__ == '__main__':
     promoter_dn=2000
     intergenic_range=20000
     GeneAnn="/c/wanghw/annotation/refseq_hg19_07292013.bed"
+    outfilename=os.path.basename(inputfile).replace("_p_s.bed","") + "_" + ntype + ".txt"
     
     for o,a in opts:
         if o == '--type':
