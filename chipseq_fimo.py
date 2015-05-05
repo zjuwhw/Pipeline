@@ -92,7 +92,7 @@ ggsave(filename="%s/allmotif2distance.pdf", plot=p)
     f.close()
     os.system("Rscript %s_rscript.r" % name)
     os.remove("%s_rscript.r" % name)
-    os.remove(name + "/allmotif2distance.txt")
+    #os.remove(name + "/allmotif2distance.txt")
 
 
 if __name__ == '__main__':
