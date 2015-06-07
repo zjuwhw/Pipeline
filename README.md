@@ -2,7 +2,7 @@ Pipeline
 ========
 
 This is a repository to store the pipeline to analysis affy microarray, single-end ChIP-seq and pair-end RNA-seq in Wang lab.
-### ChIP-seq analysis:
+### single-end ChIP-seq analysis:
 ####required tools:
 *alignment: [bwa](http://bio-bwa.sourceforge.net/), [bowtie2](http://bowtie-bio.sourceforge.net/bowtie2/index.shtml)
 
@@ -15,13 +15,18 @@ This is a repository to store the pipeline to analysis affy microarray, single-e
 *other tools: [bedtools](http://bedtools.readthedocs.org/en/latest/), [samtools](http://samtools.sourceforge.net/), [UCSC Jim Kent utility](http://hgdownload.soe.ucsc.edu/admin/exe/linux.x86_64/)
 
 ####pipeline:
-*chipseq_pipeline.py for alignment using the sra or fastq files, and output bam file with only the uniq mapped and no duplicated reads
+*chipseq_pipeline.py for alignment using the sra or fastq files, and output bam file with only the unique mapped and non duplicated reads
 
-*extract_signal_from_bigwig.py for calculate the signal value for a genome region and then to do aggregation plot or heatmap plot
+*chipseq_peakcalling.py for peak calling using unique mapped and non duplicated reads. Two tools are avaliable, MACS14 and Hpeak.
 
-*motif_discovery.py for motif discovery
 
-*peak_overlap_venn.py for cacluate the overlap number of different ChIP-seq peaks and then do the Venn plot
+*chipseq_peak_overlap_venn.py for cacluate the overlap number of different ChIP-seq peaks and then do the Venn plot
+
+*chipseq_peak2gene.py for find the target gene of a ChIPed enrichment region (peak). Three types to associate the peak with gene are avaliable, that is "peak2gene", "gene2peak", "peakAroundgene"
+
+*chipseq_extract_signal_from_bigwig.py for calculate the signal value for a genome region and then to do aggregation plot or heatmap plot
+
+*chipseq_motif_discovery.py for motif discovery
 
 ### Microarray analysis:
 ####required tools:
