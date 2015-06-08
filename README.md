@@ -29,9 +29,11 @@ This is a repository to store the pipeline to analysis affy microarray, single-e
 
 ### Microarray analysis:
 ####required tools:
-*R bioconductor package [affy](http://www.bioconductor.org/packages/release/bioc/html/affy.html) for "hgu133a","hgu133a2","hgu133b","hgu133plus2","hgu219","hgu95a","hgu95av2","hgu95b","hgu95c","hgu95d","hgu95e","u133aaofav2"
+*R bioconductor package [affy](http://www.bioconductor.org/packages/release/bioc/html/affy.html)
+for "hgu133a","hgu133a2","hgu133b","hgu133plus2","hgu219","hgu95a","hgu95av2","hgu95b","hgu95c","hgu95d","hgu95e","u133aaofav2"
 
-*R bioconductor package [oligo](http://www.bioconductor.org/packages/release/bioc/html/oligo.html) for "huex10st","hugene10st","hugene11st","hugene20st","hugene21st"
+*R bioconductor package [oligo](http://www.bioconductor.org/packages/release/bioc/html/oligo.html)
+for "huex10st","hugene10st","hugene11st","hugene20st","hugene21st"
 
 ####pipeline:
 *affy_build_annotation.py --- download annotation files for affy microarray probe id, using the R bioconductor annotation db package 
@@ -41,3 +43,13 @@ This is a repository to store the pipeline to analysis affy microarray, single-e
 *affy_array_pipeline.py --- affy microarray pipeline using R to do rma, mas5.0 and/or not customCDF normalization
 
 *affy_array_pipeline.py --- affy microarray pipeline using R to do rma, mas5.0 and/or not customCDF normalization
+
+###pair-end RNA-seq analysis:
+####required tools:
+*fastq QC: [fastqc](http://www.bioinformatics.babraham.ac.uk/projects/fastqc/)
+
+*trimming: [trimmomatic](http://www.usadellab.org/cms/index.php?page=trimmomatic)
+
+*alignment: [STAR](https://github.com/alexdobin/STAR) [tophat](http://tophat.cbcb.umd.edu/)
+
+*bam QC:
