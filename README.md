@@ -15,19 +15,29 @@ This is a repository to store the pipeline to analysis affy microarray, single-e
 *other tools: [bedtools](http://bedtools.readthedocs.org/en/latest/), [samtools](http://samtools.sourceforge.net/), [UCSC Jim Kent utility](http://hgdownload.soe.ucsc.edu/admin/exe/linux.x86_64/)
 
 ####pipeline:
-*chipseq_pipeline.py for alignment using the sra or fastq files, and output bam file with only the unique mapped and non duplicated reads
+*chipseq_pipeline.py --- alignment using the sra or fastq files, and output bam file with only the unique mapped and non duplicated reads
 
-*chipseq_peakcalling.py for peak calling using unique mapped and non duplicated reads. Two tools are avaliable, MACS14 and Hpeak.
+*chipseq_peakcalling.py --- peak calling using unique mapped and non duplicated reads. Two tools are avaliable, MACS14 and Hpeak.
 
+*chipseq_peak_overlap_venn.py --- cacluate the overlap number of different ChIP-seq peaks and then do the Venn plot
 
-*chipseq_peak_overlap_venn.py for cacluate the overlap number of different ChIP-seq peaks and then do the Venn plot
-
-*chipseq_peak2gene.py for find the target gene of a ChIPed enrichment region (peak). Three types to associate the peak with gene are avaliable, that is "peak2gene", "gene2peak", "peakAroundgene"
+*chipseq_peak2gene.py --- find the target gene of a ChIPed enrichment region (peak). Three types to associate the peak with gene are avaliable, that is "peak2gene", "gene2peak", "peakAroundgene"
 
 *chipseq_extract_signal_from_bigwig.py for calculate the signal value for a genome region and then to do aggregation plot or heatmap plot
 
-*chipseq_motif_discovery.py for motif discovery
+*chipseq_motif_discovery.py --- motif discovery using meme-chip, homer or amd
 
 ### Microarray analysis:
 ####required tools:
+*R bioconductor package [affy](http://www.bioconductor.org/packages/release/bioc/html/affy.html) for "hgu133a","hgu133a2","hgu133b","hgu133plus2","hgu219","hgu95a","hgu95av2","hgu95b","hgu95c","hgu95d","hgu95e","u133aaofav2"
 
+*R bioconductor package [oligo](http://www.bioconductor.org/packages/release/bioc/html/oligo.html) for "huex10st","hugene10st","hugene11st","hugene20st","hugene21st"
+
+####pipeline:
+*affy_build_annotation.py --- download annotation files for affy microarray probe id, using the R bioconductor annotation db package 
+
+*affy_ExonOrGene_build_annotation.py --- download annotation files for affy Exon Or Gene microarray transcriptcluster id, using the R bioconductor annotation db package
+
+*affy_array_pipeline.py --- affy microarray pipeline using R to do rma, mas5.0 and/or not customCDF normalization
+
+*affy_array_pipeline.py --- affy microarray pipeline using R to do rma, mas5.0 and/or not customCDF normalization
