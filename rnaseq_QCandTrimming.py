@@ -64,7 +64,7 @@ if __name__ == '__main__':
             option = "ILLUMINACLIP:%s:2:30:10 SLIDINGWINDOW:4:15 TRAILING:10 MINLEN:20" % a
         elif o == "--trimmomatic_option":
             option = a
-        elif o == "outDir":
+        elif o == "--outDir":
             outDir = a
     
     
