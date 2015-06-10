@@ -15,13 +15,13 @@ USAGE:
 3)scan the read with a 4-base wide sliding window, cutting when the average quality per base drops below 15.
 4)Drop reads which are less than 20 bases long after these steps.
 #--adapter: the path of adapter fasta file, trimmomatic provides "TruSeq2-PE.fa" for GAII machines and "TruSeq3-PE.fa" or "TruSeq3-PE-2.fa" for HiSeq and MiSeq machines. Default is "/c/wanghw/software/rnaseq/Trimmomatic-0.32/adapters/TruSeq3-PE-2.fa".
-#outDir: current directory
+#outDir: ./${basename}_QcandTrim/
 
 Note:
 The tools, fastqc and trimmomatic, are needed in $PATH
 '''
 
-import os, getopt, sys, time, os.path
+import os, getopt, sys, time, os.path, re
 
 def fastqc(fastqfile, outdir):
     cmd = "fastqc -o %s %s" % (outdir, fastqfile)
@@ -55,7 +55,7 @@ if __name__ == '__main__':
     read2 = args[1]
     
     # defaults
-    outDir = "./"
+    outDir = re.sub("_1(P?).(fastq|fq).*", "", os.path.basename(read1)) + "_QcandTrim"
     adapter="/c/wanghw/software/rnaseq/Trimmomatic-0.32/adapters/TruSeq3-PE-2.fa"
     option="ILLUMINACLIP:%s:2:30:10 SLIDINGWINDOW:4:15 TRAILING:10 MINLEN:20" % adapter
     for o,a in opts:
@@ -67,7 +67,7 @@ if __name__ == '__main__':
         elif o == "--outDir":
             outDir = a
     
-    
+    os.mkdir(outDir)
     fastqc(read1, outDir)
     fastqc(read2, outDir)
     read1P, read2P = trim(read1, read2, outDir, option)
