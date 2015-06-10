@@ -3,8 +3,10 @@
 #NOTE: the chromsome name of genome sequence file and gene annotation file must be same. It can be "chr1" or "1".
 #zjuwhw:zju_whw@gmail.com
 #2015-06-08
-DNAREF=$1 #absolute path
-GTF=$2 #absolute path
+alias awk="awk -F '\t' -v OFS='\t'"
+
+DNAREF=$1 #absolute path to genome sequence fasta file
+GTF=$2 #absolute path to gene annotation gtf file
 
 dir=$(dirname $DNAREF)
 basename=$(echo $DNAREF|awk '{split($1,x,"/");print x[length(x)]}')
@@ -43,3 +45,28 @@ echo "building HISAT index ..."
 mkdir ${dir}/hisatindex
 ln -s $DNAREF ${dir}/hisatindex/
 hisat-build ${dir}/hisatindex/${basename} ${dir}/hisatindex/${basename%.fa}
+
+#fasta index for samtools and bedtools
+samtools faidx $DNAREF
+
+#chrom size file
+cut -f1-2 ${DNAREF}.fai > ${DNAREF}.chrom.sizes
+
+#fasta index for picard
+samtools dict $DNAREF > ${DNAREF}.dict
+#picard CreateSequenceDictionary R=$DNAREF O=${DNAREF}.dicd
+
+#refFlat for picard.CollectRnaSeqMetrics using gtfToGenePred
+gtfToGenePred -ignoreGroupsWithoutExons $GTF ${GTF%gtf}refFlat.tmp
+awk '{print $1, $0}' ${GTF%gtf}refFlat.tmp > ${GTF%gtf}refFlat
+rm -f ${GTF%gtf}refFlat.tmp
+
+#rRNA interval list for picard.CollectRnaSeqMetrics using code from
+#https://gist.github.com/slowkow/b11c28796508f03cdf4b; https://www.biostars.org/p/120145/
+perl -lane 'print "\@SQ\tSN:$F[0]\tLN:$F[1]\tAS:hg38"' ${DNAREF}.chrom.sizes > ${GTF%gtf}.rRNA.interval_list
+
+grep 'gene_biotype "rRNA"' $GTF |\
+awk '$3=="transcript"' |\
+cut -f1,4,5,7,9 |\
+perl -lane '/transcript_id "([^"]+)"/ or die "no transcript_id on $."; print join "\t", (@F[0,1,2,3], $1)'|\
+sort -k1V -k2n -k3n  >> ${GTF%gtf}.rRNA.interval_list
