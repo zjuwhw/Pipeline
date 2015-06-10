@@ -54,7 +54,7 @@ cut -f1-2 ${DNAREF}.fai > ${DNAREF}.chrom.sizes
 
 #fasta index for picard
 samtools dict $DNAREF > ${DNAREF}.dict
-#picard CreateSequenceDictionary R=$DNAREF O=${DNAREF}.dicd
+#picard CreateSequenceDictionary R=$DNAREF O=${DNAREF}.dict
 
 #refFlat for picard.CollectRnaSeqMetrics using gtfToGenePred
 gtfToGenePred -ignoreGroupsWithoutExons $GTF ${GTF%gtf}refFlat.tmp
