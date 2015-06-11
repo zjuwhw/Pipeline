@@ -12,8 +12,6 @@ This is a repository to store the pipeline to analysis affy microarray, single-e
 
 *plot: [VennDiagram](http://cran.r-project.org/web/packages/VennDiagram/index.html), [ggplot2](http://ggplot2.org/) in R software
 
-*other tools: [bedtools](http://bedtools.readthedocs.org/en/latest/), [samtools](http://samtools.sourceforge.net/), [UCSC Jim Kent utility](http://hgdownload.soe.ucsc.edu/admin/exe/linux.x86_64/)
-
 ####pipeline:
 *chipseq_pipeline.py --- alignment using the sra or fastq files, and output bam file with only the unique mapped and non duplicated reads
 
@@ -52,4 +50,8 @@ for "huex10st","hugene10st","hugene11st","hugene20st","hugene21st"
 
 *alignment: [STAR](https://github.com/alexdobin/STAR) [tophat](http://tophat.cbcb.umd.edu/)
 
-*bam QC:
+*bam QC: [SAMSTAT](http://samstat.sourceforge.net/), [RSeQC](http://rseqc.sourceforge.net/), [RNA-SeQC](http://www.broadinstitute.org/cancer/cga/rna-seqc), [picard-RNASeqMetrics](http://broadinstitute.github.io/picard/command-line-overview.html#CollectRnaSeqMetrics)
+
+
+###other common tools: 
+[bedtools](http://bedtools.readthedocs.org/en/latest/), [samtools](http://samtools.sourceforge.net/), [UCSC Jim Kent utility](http://hgdownload.soe.ucsc.edu/admin/exe/linux.x86_64/), [picard](http://broadinstitute.github.io/picard/)
