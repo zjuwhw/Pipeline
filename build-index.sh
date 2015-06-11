@@ -57,9 +57,9 @@ samtools dict $DNAREF > ${DNAREF}.dict
 #picard CreateSequenceDictionary R=$DNAREF O=${DNAREF}.dict
 
 #refFlat for picard.CollectRnaSeqMetrics using gtfToGenePred
-gtfToGenePred -ignoreGroupsWithoutExons $GTF ${GTF%gtf}refFlat.tmp
-awk '{print $1, $0}' ${GTF%gtf}refFlat.tmp > ${GTF%gtf}refFlat
-rm -f ${GTF%gtf}refFlat.tmp
+gtfToGenePred -ignoreGroupsWithoutExons $GTF ${GTF%gtf}genePred
+awk '{print $1, $0}' ${GTF%gtf}genePred > ${GTF%gtf}refFlat
+genePredToBed ${GTF%gtf}genePred ${GTF%gtf}bed
 
 #rRNA interval list for picard.CollectRnaSeqMetrics using code from
 #https://gist.github.com/slowkow/b11c28796508f03cdf4b; https://www.biostars.org/p/120145/
