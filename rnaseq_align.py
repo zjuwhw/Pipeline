@@ -6,7 +6,7 @@ USAGE:
     python %s [--tool=#] [--strand-specific=#] [--tophat-genome-index=#] [--tophat-transcriptome-index=#] [--STAR-index=#] [--thread=#] [--tophat-other-options=#] [--STAR-other-options=#] [--chrom_size=#] [--dict=#] [--prefix=#] read1 read2
 
 #input: quality and adapter trimmed fastq(.fastq, .fq, .fastq.gz, .fq.gz) files of read1 and read2
-#output: $prefix_tophat folder, $prefix_STAR folder
+#output: $prefix_tophat folder, $prefix_STAR, $prefix_BamandSignal folder
 
 #defaults:
 --tool: "tophat", "STAR", "both". Default: "both"
@@ -35,6 +35,7 @@ After alignment, the program will use the bam file to do:
 5)SortSam by name
 6)index the bam files
 7)remove the middle files
+8)creat soft link to bam and bigWig files in the $prefix_BamandSignal folder
 '''
 
 import os, getopt, sys, time, os.path, re
@@ -69,12 +70,13 @@ def bam_to_bigWig_stranded(inputbam, prefix, chromsize):
     os.remove("%s/Signal.Unique.str1.out.bg" % os.path.dirname(inputbam))
     os.remove("%s/Signal.UniqueMultiple.str2.out.bg" % os.path.dirname(inputbam))
     os.remove("%s/Signal.Unique.str2.out.bg" % os.path.dirname(inputbam))
-    #if not os.path.exists(prefix+"_BamandSignal"):
-    #    os.mkdir(prefix+"_BamandSignal")
-    #os.system("ln -s %s/%s_minusAll.bigWig %s_BamandSignal/%s_minusAll.bigWig" % (os.path.dirname(inputbam), prefix, prefix, prefix))
-    #os.system("ln -s %s/%s_minusUniq.bigWig %s_BamandSignal/%s_minusUniq.bigWig" % (os.path.dirname(inputbam), prefix, prefix, prefix))
-    #os.system("ln -s %s/%s_plusAll.bigWig %s_BamandSignal/%s_plusAll.bigWig" % (os.path.dirname(inputbam), prefix, prefix, prefix))
-    #os.system("ln -s %s/%s_plusUniq.bigWig %s_BamandSignal/%s_plusUniq.bigWig" % (os.path.dirname(inputbam), prefix, prefix, prefix))
+    
+    if not os.path.exists(prefix+"_BamandSignal"):
+        os.mkdir(prefix+"_BamandSignal")
+    os.system("ln -s ../%s/%s_plusUniq.bigWig %s_BamandSignal/%s_plusUniq.bigWig" % (os.path.dirname(inputbam), prefix, prefix,os.path.dirname(inputbam).rstrip("/").split("/")[-1]))
+    os.system("ln -s ../%s/%s_plusAll.bigWig %s_BamandSignal/%s_plusAll.bigWig" % (os.path.dirname(inputbam), prefix, prefix,os.path.dirname(inputbam).rstrip("/").split("/")[-1]))
+    os.system("ln -s ../%s/%s_minusUniq.bigWig %s_BamandSignal/%s_minusUniq.bigWig" % (os.path.dirname(inputbam), prefix, prefix,os.path.dirname(inputbam).rstrip("/").split("/")[-1]))
+    os.system("ln -s ../%s/%s_minusAll.bigWig %s_BamandSignal/%s_minusAll.bigWig" % (os.path.dirname(inputbam), prefix, prefix,os.path.dirname(inputbam).rstrip("/").split("/")[-1]))
     
 def bam_to_bigWig_unstranded(inputbam, prefix, chromsize):
     print "### convert unstranded bam file to bigWig file ..."
@@ -86,11 +88,11 @@ def bam_to_bigWig_unstranded(inputbam, prefix, chromsize):
     os.system(cmd3)
     os.remove("%s/Signal.UniqueMultiple.str1.out.bg" % os.path.dirname(inputbam))
     os.remove("%s/Signal.Unique.str1.out.bg" % os.path.dirname(inputbam))
-    #if not os.path.exists(prefix+"_BamandSignal"):
-    #    os.mkdir(prefix+"_BamandSignal")
-    #os.system("ln -s %s/%s_uniq.bigWig %s_BamandSignal/%s_uniq.bigWig" % (os.path.dirname(inputbam), prefix, prefix, prefix))
-    #os.system("ln -s %s/%s_all.bigWig %s_BamandSignal/%s_all.bigWig" % (os.path.dirname(inputbam), prefix, prefix, prefix))
     
+    if not os.path.exists(prefix+"_BamandSignal"):
+        os.mkdir(prefix+"_BamandSignal")
+    os.system("ln -s ../%s/%s_uniq.bigWig %s_BamandSignal/%s_uniq.bigWig" % (os.path.dirname(inputbam), prefix, prefix, os.path.dirname(inputbam).rstrip("/").split("/")[-1]))
+    os.system("ln -s ../%s/%s_all.bigWig %s_BamandSignal/%s_all.bigWig" % (os.path.dirname(inputbam), prefix, prefix, os.path.dirname(inputbam).rstrip("/").split("/")[-1]))
 def indexbam(inputbam):
     cmd = "samtools index %s" % inputbam
     os.system(cmd)
@@ -119,10 +121,11 @@ def after_bam(inputbam, dictfile, strandness, prefix):
     os.remove(inputbam.replace(".bam", ".ReorderSam.bam"))
     os.remove(inputbam.replace(".bam", ".ReorderSam.bam")+".bai")
     
-    #os.system("ln -s %s %s_BamandSignal/%s.CoordSorted.bam" % (inputbam.replace(".bam", ".CoordSorted.bam"), prefix, prefix))
-    #os.system("ln -s %s %s_BamandSignal/%s.CoordSorted.bam.bai" % (inputbam.replace(".bam", ".CoordSorted.bam") + ".bai", prefix, prefix))
-    #os.system("ln -s %s %s_BamandSignal/%s.NameSorted.bam" % (inputbam.replace(".bam", ".NameSorted.bam"), prefix, prefix))
-    #os.system("ln -s %s %s_BamandSignal/%s.NameSorted.bam.bai" % (inputbam.replace(".bam", ".NameSorted.bam") + ".bai", prefix, prefix))
+    if not os.path.exists(prefix+"_BamandSignal"):
+        os.mkdir(prefix+"_BamandSignal")
+    os.system("ln -s ../%s/%s %s_BamandSignal/%s.CoordSorted.bam" % (os.path.dirname(inputbam), os.path.basename(inputbam).replace(".bam",".CoordSorted.bam"),prefix,os.path.dirname(inputbam).rstrip("/").split("/")[-1]))
+    os.system("ln -s ../%s/%s %s_BamandSignal/%s.CoordSorted.bam.bai" % (os.path.dirname(inputbam), os.path.basename(inputbam).replace(".bam",".CoordSorted.bam.bai"),prefix,os.path.dirname(inputbam).rstrip("/").split("/")[-1]))
+    os.system("ln -s ../%s/%s %s_BamandSignal/%s.NameSorted.bam" % (os.path.dirname(inputbam), os.path.basename(inputbam).replace(".bam",".NameSorted.bam"),prefix,os.path.dirname(inputbam).rstrip("/").split("/")[-1]))
     
 if __name__ == '__main__':
     
@@ -131,7 +134,7 @@ if __name__ == '__main__':
         print USAGE % sys.argv[0]
         sys.exit(1)
     
-    opts, args = getopt.getopt(sys.argv[1:], "", ["tool=","strand-specific=","tophat-genome-index=","tophat-transcriptome-index","STAR-index","thread","tophat-other-options", "STAR-other-options", "chrom-size","prefix"])
+    opts, args = getopt.getopt(sys.argv[1:], "", ["tool=","strand-specific=","tophat-genome-index=","tophat-transcriptome-index=","STAR-index=","thread=","tophat-other-options=", "STAR-other-options=", "chrom-size=","dict=", "prefix="])
     
     if len(args) != 2:
         print "This program is only for pair-end RNA-seq, not single-end RNA-seq"
@@ -182,7 +185,7 @@ if __name__ == '__main__':
             chromsize = a
         if o == "--dict":
             dictfile = a
-        if o == "prefix" :
+        if o == "--prefix" :
             prefix = a
     
     if tool == "both":
@@ -214,7 +217,6 @@ if __name__ == '__main__':
             STAR(read1, read2, STAROpt, thread, prefix, SI)
             bam_to_bigWig_unstranded(prefix+"_STAR/Aligned.sortedByCoord.out.bam", prefix, chromsize)
         after_bam(prefix+"_STAR/Aligned.sortedByCoord.out.bam", dictfile, strandness, prefix)
-    
     
     endtime = time.time()
     print "it takes %.3f minutes or %.3f seconds" % ((endtime-starttime)/60, endtime -starttime)
