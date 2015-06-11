@@ -36,7 +36,7 @@ def trim(read1, read2, outdir, option):
     cmd = "trimmomatic PE %s %s %s %s %s %s %s" % (read1, read2, outdir.rstrip("/")+"/"+read1P_name, outdir.rstrip("/")+"/"+read1U_name, outdir.rstrip("/")+"/"+read2P_name, outdir.rstrip("/")+"/"+read2U_name, option)
     print "########Trimmomatic command:" + cmd
     os.system(cmd)
-    return [read1P_name, read2P_name]
+    return [outdir.rstrip("/")+"/"+read1P_name, outdir.rstrip("/")+"/"+read2P_name]
     
 if __name__ == '__main__':
     
