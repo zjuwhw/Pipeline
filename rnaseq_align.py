@@ -1,9 +1,12 @@
+#!/usr/local/bin/python
+#author: zjuwhw
+#2015-06-10
 USAGE='''rnaseq_align.py--- align pair-end strand-specific (or not) RNA-seq reads by Tophat and STAR
 USAGE:
-    python %s [--tool=#] [--strand-specific=#] [--tophat-genome-index=#] [--tophat-transcriptome-index=#] [--STAR-index=#] [--thread=#] [--tophat-other-options=#] [--STAR-other-options=#] [--chrom_size=#] [--prefix=#] read1 read2
+    python %s [--tool=#] [--strand-specific=#] [--tophat-genome-index=#] [--tophat-transcriptome-index=#] [--STAR-index=#] [--thread=#] [--tophat-other-options=#] [--STAR-other-options=#] [--chrom_size=#] [--dict=#] [--prefix=#] read1 read2
 
 #input: quality and adapter trimmed fastq(.fastq, .fq, .fastq.gz, .fq.gz) files of read1 and read2
-#output: $prefix_tophat folder, $prefix_STAR folder.
+#output: $prefix_tophat folder, $prefix_STAR folder
 
 #defaults:
 --tool: "tophat", "STAR", "both". Default: "both"
@@ -18,11 +21,20 @@ The default options is what encode script used (https://github.com/ENCODE-DCC/lo
 --STAR-options: the options that STAR used. Default:Default: --outSAMtype BAM SortedByCoordinate  --genomeLoad NoSharedMemory  --outFilterMultimapNmax 20  --alignSJoverhangMin 8 --alignSJDBoverhangMin 1  --outFilterMismatchNmax 999 --outFilterMismatchNoverReadLmax 0.04  --alignIntronMin 20 --alignIntronMax 1000000 --alignMatesGapMax 1000000 --outFilterType BySJout  --quantMode TranscriptomeSAM --sjdbScore 1   --limitBAMsortRAM 40000000000
 The default options is what encode script used (https://github.com/ENCODE-DCC/long-rna-seq-pipeline/blob/master/dnanexus/align-star-pe/src/align-star-pe.sh), but I do not include unmapped reads in the outputbam.
 --chrom_size: the chrom size of reference genome, which is used to convert bam to bigWig. Default: "/d/database/hg38/DNAsequence_Ensembl/Homo_sapiens.GRCh38.dna.primary_assembly.fa.chrom.sizes"
+--dict: the sequence dictionary of reference genome, which is used by picard. Default: "/d/database/hg38/DNAsequence_Ensembl/Homo_sapiens.GRCh38.dna.primary_assembly.fa.dict"
+the chrom_size file and dict file should be in the same directory with reference sequence and can be produced by another program in the Pipeline repo called "build-index.sh"
 --prefix: the basename of read1 and trim the postfix "_1P.fq(fastq/fq.gz/fastq.gz)"
 
 Note:
-The tools, STAR, tophat and UCSC utilities, are needed in $PATH
-After tophat alignment, the program will convert bam to bigWig file to visualize in IGV.
+The tools, STAR, tophat, picard, samtools and UCSC utilities, are needed in $PATH
+After alignment, the program will use the bam file to do:
+1)convert bam to bigWig file to visualize in IGV.
+2)add the RG(Read Group) to the bam header
+3)Reorder the header of the bam to match with the sequence dictionary
+4)SortSam by coodinate
+5)SortSam by name
+6)index the bam files
+7)remove the middle files
 '''
 
 import os, getopt, sys, time, os.path, re
@@ -39,7 +51,7 @@ def STAR(read1, read2, STAROpt, thread, prefix, SI):
     print "### running STAR for stranded or unstranded RNA-seq ..."
     cmd1 = "mkdir -p "+prefix+"_STAR"
     os.system(cmd1)
-    cmd2 = "STAR %s --runThreadN %d --genomeDir %s --readFilesIn %s %s --outFileNamePrefix %s" % (STAROpt, thread, SI, read1, read2, "./"+prefix+"_STAR/")
+    cmd2 = "STAR %s --runThreadN %d --genomeDir %s --readFilesIn %s %s --outFileNamePrefix %s" % (STAROpt, thread, SI, read1, read2, prefix+"_STAR/")
     os.system(cmd2)
 def bam_to_bigWig_stranded(inputbam, prefix, chromsize):
     print "### convert stranded bam file to bigWig file ..."
@@ -53,6 +65,17 @@ def bam_to_bigWig_stranded(inputbam, prefix, chromsize):
     os.system(cmd3)
     os.system(cmd4)
     os.system(cmd5)
+    os.remove("%s/Signal.UniqueMultiple.str1.out.bg" % os.path.dirname(inputbam))
+    os.remove("%s/Signal.Unique.str1.out.bg" % os.path.dirname(inputbam))
+    os.remove("%s/Signal.UniqueMultiple.str2.out.bg" % os.path.dirname(inputbam))
+    os.remove("%s/Signal.Unique.str2.out.bg" % os.path.dirname(inputbam))
+    #if not os.path.exists(prefix+"_BamandSignal"):
+    #    os.mkdir(prefix+"_BamandSignal")
+    #os.system("ln -s %s/%s_minusAll.bigWig %s_BamandSignal/%s_minusAll.bigWig" % (os.path.dirname(inputbam), prefix, prefix, prefix))
+    #os.system("ln -s %s/%s_minusUniq.bigWig %s_BamandSignal/%s_minusUniq.bigWig" % (os.path.dirname(inputbam), prefix, prefix, prefix))
+    #os.system("ln -s %s/%s_plusAll.bigWig %s_BamandSignal/%s_plusAll.bigWig" % (os.path.dirname(inputbam), prefix, prefix, prefix))
+    #os.system("ln -s %s/%s_plusUniq.bigWig %s_BamandSignal/%s_plusUniq.bigWig" % (os.path.dirname(inputbam), prefix, prefix, prefix))
+    
 def bam_to_bigWig_unstranded(inputbam, prefix, chromsize):
     print "### convert unstranded bam file to bigWig file ..."
     cmd1 = "STAR --runMode inputAlignmentsFromBAM --inputBAMfile %s --outWigType bedGraph --outWigStrand Unstranded --outFileNamePrefix  %s/ --outWigNorm RPM" % (inputbam, os.path.dirname(inputbam))
@@ -61,6 +84,45 @@ def bam_to_bigWig_unstranded(inputbam, prefix, chromsize):
     os.system(cmd1)
     os.system(cmd2)
     os.system(cmd3)
+    os.remove("%s/Signal.UniqueMultiple.str1.out.bg" % os.path.dirname(inputbam))
+    os.remove("%s/Signal.Unique.str1.out.bg" % os.path.dirname(inputbam))
+    #if not os.path.exists(prefix+"_BamandSignal"):
+    #    os.mkdir(prefix+"_BamandSignal")
+    #os.system("ln -s %s/%s_uniq.bigWig %s_BamandSignal/%s_uniq.bigWig" % (os.path.dirname(inputbam), prefix, prefix, prefix))
+    #os.system("ln -s %s/%s_all.bigWig %s_BamandSignal/%s_all.bigWig" % (os.path.dirname(inputbam), prefix, prefix, prefix))
+    
+def indexbam(inputbam):
+    cmd = "samtools index %s" % inputbam
+    os.system(cmd)
+def after_bam(inputbam, dictfile, strandness, prefix):
+    #the picard is usually used by the long command "java -jar [path to picard.jar]"
+    #In this program, I write a script to use "picard" instead of long command:
+    ##!/bin/bash
+    #java -Xmx2g -jar /c/wanghw/software/rnaseq/picard-tools-1.133/picard.jar $@
+    cmd1 = "picard AddOrReplaceReadGroups I=%s O=%s ID=Wanglab-%s LB=%s PL=ILLUMINA PU=a SM=%s" % (inputbam, inputbam.replace(".bam", ".RD.bam"), prefix, strandness, prefix)
+    cmd2 = "picard ReorderSam I=%s O=%s R=%s" % (inputbam.replace(".bam", ".RD.bam"), inputbam.replace(".bam", ".ReorderSam.bam"), dictfile.replace(".dict",""))
+    cmd3 = "picard SortSam I=%s O=%s SO=coordinate" % (inputbam.replace(".bam", ".ReorderSam.bam"), inputbam.replace(".bam", ".CoordSorted.bam"))
+    cmd4 = "samtools sort -n %s %s" % (inputbam.replace(".bam", ".ReorderSam.bam"), inputbam.replace(".bam", ".NameSorted"))
+    
+    indexbam(inputbam)
+    os.system(cmd1)
+    indexbam(inputbam.replace(".bam", ".RD.bam"))
+    os.system(cmd2)
+    indexbam(inputbam.replace(".bam", ".ReorderSam.bam"))
+    os.system(cmd3)
+    indexbam(inputbam.replace(".bam", ".CoordSorted.bam"))
+    os.system(cmd4)
+    os.remove(inputbam)
+    os.remove(inputbam+".bai")
+    os.remove(inputbam.replace(".bam", ".RD.bam"))
+    os.remove(inputbam.replace(".bam", ".RD.bam")+".bai")
+    os.remove(inputbam.replace(".bam", ".ReorderSam.bam"))
+    os.remove(inputbam.replace(".bam", ".ReorderSam.bam")+".bai")
+    
+    #os.system("ln -s %s %s_BamandSignal/%s.CoordSorted.bam" % (inputbam.replace(".bam", ".CoordSorted.bam"), prefix, prefix))
+    #os.system("ln -s %s %s_BamandSignal/%s.CoordSorted.bam.bai" % (inputbam.replace(".bam", ".CoordSorted.bam") + ".bai", prefix, prefix))
+    #os.system("ln -s %s %s_BamandSignal/%s.NameSorted.bam" % (inputbam.replace(".bam", ".NameSorted.bam"), prefix, prefix))
+    #os.system("ln -s %s %s_BamandSignal/%s.NameSorted.bam.bai" % (inputbam.replace(".bam", ".NameSorted.bam") + ".bai", prefix, prefix))
     
 if __name__ == '__main__':
     
@@ -90,6 +152,7 @@ if __name__ == '__main__':
     TophatOpt = "-z0 -a 8 --min-intron-length 20 --max-intron-length 1000000 --read-edit-dist 4 --read-mismatches 4 -g 20 --no-discordant --no-mixed "
     STAROpt = "--outSAMtype BAM SortedByCoordinate  --genomeLoad NoSharedMemory  --outFilterMultimapNmax 20  --alignSJoverhangMin 8 --alignSJDBoverhangMin 1  --outFilterMismatchNmax 999 --outFilterMismatchNoverReadLmax 0.04  --alignIntronMin 20 --alignIntronMax 1000000 --alignMatesGapMax 1000000 --outFilterType BySJout  --quantMode TranscriptomeSAM --sjdbScore 1  --limitBAMsortRAM 40000000000 "
     chromsize = "/d/database/hg38/DNAsequence_Ensembl/Homo_sapiens.GRCh38.dna.primary_assembly.fa.chrom.sizes"
+    dictfile = "/d/database/hg38/DNAsequence_Ensembl/Homo_sapiens.GRCh38.dna.primary_assembly.fa.dict"
     prefix = re.sub("_1(P?).(fastq|fq).*", "", os.path.basename(read1))
     
     for o, a in opts:
@@ -117,6 +180,8 @@ if __name__ == '__main__':
             STAROpt = a
         if o == "--chrom-size":
             chromsize = a
+        if o == "--dict":
+            dictfile = a
         if o == "prefix" :
             prefix = a
     
@@ -131,6 +196,8 @@ if __name__ == '__main__':
             STAR(read1, read2, STAROpt, thread, prefix, SI)
             bam_to_bigWig_unstranded(prefix+"_tophat/accepted_hits.bam", prefix, chromsize)
             bam_to_bigWig_unstranded(prefix+"_STAR/Aligned.sortedByCoord.out.bam", prefix, chromsize)
+        after_bam(prefix+"_tophat/accepted_hits.bam", dictfile, strandness, prefix)
+        after_bam(prefix+"_STAR/Aligned.sortedByCoord.out.bam", dictfile, strandness, prefix)
     elif tool == "tophat":
         if strandness == "stranded":
             tophat_stranded(read1, read2, TophatOpt, thread, prefix, TTI, TGI)
@@ -138,6 +205,7 @@ if __name__ == '__main__':
         elif strandness == "unstranded":
             tophat_unstranded(read1, read2, TophatOpt, thread, prefix, TTI, TGI)
             bam_to_bigWig_unstranded(prefix+"_tophat/accepted_hits.bam", prefix, chromsize)
+        after_bam(prefix+"_tophat/accepted_hits.bam", dictfile, strandness, prefix)
     elif tool == "STAR":
         if strandness == "stranded":
             STAR(read1, read2, STAROpt, thread, prefix, SI)
@@ -145,6 +213,8 @@ if __name__ == '__main__':
         elif strandness == "unstranded":
             STAR(read1, read2, STAROpt, thread, prefix, SI)
             bam_to_bigWig_unstranded(prefix+"_STAR/Aligned.sortedByCoord.out.bam", prefix, chromsize)
+        after_bam(prefix+"_STAR/Aligned.sortedByCoord.out.bam", dictfile, strandness, prefix)
+    
     
     endtime = time.time()
-    print "it takes %.3f secondes or %.3f minutes" % (endtime -starttime, (endtime-starttime)/60)
+    print "it takes %.3f minutes or %.3f seconds" % ((endtime-starttime)/60, endtime -starttime)
