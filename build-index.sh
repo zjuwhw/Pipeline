@@ -61,6 +61,11 @@ gtfToGenePred -ignoreGroupsWithoutExons $GTF ${GTF%gtf}genePred
 awk '{print $1, $0}' ${GTF%gtf}genePred > ${GTF%gtf}refFlat
 genePredToBed ${GTF%gtf}genePred ${GTF%gtf}bed
 
+#gc content of transcript sequence fasta
+bedtools getfasta -name -split -fi ${DNAREF} -bed ${GTF%gtf}bed -fo ${DNAREF}.rna.fasta
+python calculate_cg_fasta.py ${DNAREF}.rna.fasta
+
+
 #rRNA interval list for picard.CollectRnaSeqMetrics using code from
 #https://gist.github.com/slowkow/b11c28796508f03cdf4b; https://www.biostars.org/p/120145/
 perl -lane 'print "\@SQ\tSN:$F[0]\tLN:$F[1]\tAS:hg38"' ${DNAREF}.chrom.sizes > ${GTF%gtf}.rRNA.interval_list
