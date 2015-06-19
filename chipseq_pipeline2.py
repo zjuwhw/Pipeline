@@ -2,7 +2,7 @@
 ##time: 2015-06-19
 USAGE='''chipseq_pipeline2.py --- This program is used for single-end ChIP-seq data preprocess and alignment by bwa software;
 usage:
-    python %s [--refdna=#] [--prefix=#] inputdata(fastq or sra)
+    python %s [--refdna=#] [--prefix=#] [--NOrm] inputdata(fastq or sra)
 
 #input: fastq/fq(.gz) or sra file, it must obey the regular expression "\.((fastq|fq)(\.gz)?|sra)$"
 #output: ${prefix}.bam, ${prefix}.bam.bai, ${prefix}.log files
@@ -10,6 +10,7 @@ usage:
 #defaults:
 --refdna: DNA reference sequence fasta file. Default: "/d/database/hg19/bwaindex/hg19.fa".
 --prefix: Default: the basename of inputdata.
+--NOrm: if set the option, the program will not remove the bam file in the middle steps. Default: False.
 
 Note:
 The program "bwa","samtools" must be installed and avaliable in the $PATH.
@@ -51,6 +52,9 @@ def bamindex(bamfile):
 def bamcount(bamfile):
     cmd = "samtools view %s | wc -l " % bamfile
     return ossystemresult(cmd)
+def bammapped(bamfile):
+    cmd = "samtools view -F 4 %s | wc -l" % bamfile
+    return ossystemresult(cmd)
         
 if __name__ == '__main__':
     
@@ -59,7 +63,7 @@ if __name__ == '__main__':
         print USAGE % sys.argv[0]
         sys.exit(1)
     
-    opts, args = getopt.getopt(sys.argv[1:], "", ["refdna=", "prefix="])
+    opts, args = getopt.getopt(sys.argv[1:], "", ["NOrm", "refdna=", "prefix="])
     inputfile = args[0]
     
     regular = r"\.((fastq|fq)(\.gz)?|sra)$"
@@ -71,12 +75,15 @@ if __name__ == '__main__':
     #default:
     refdna = "/d/database/hg19/bwaindex/hg19.fa"
     prefix = re.sub(regular, "", os.path.basename(inputfile))
+    rmswitch = True
     
     for o, a in opts:
         if o == "--refdna":
             refdna = a
         if o == "--prefix":
             prefix = a
+        if o == "--NOrm":
+            rmswitch = False
     
     logfile = open(prefix+".log", "w")
     print >> logfile, "inputfile name:\t%s" % (inputfile)
@@ -85,17 +92,19 @@ if __name__ == '__main__':
     if postfix == ".sra":
         inputfile = sra2fastq(inputfile, prefix)
     bamfile = fastq2bam(inputfile, prefix, refdna)
-    nodupbamfile = bam2nodupbam(bamfile)
-    nodupuniqbamfile=bam2uniqbam(nodupbamfile)    
-    bamindex(nodupuniqbamfile)
+    uniqbamfile = bam2uniqbam(bamfile)
+    uniqnodupbamfile=bam2nodupbam(uniqbamfile)
+    bamindex(uniqnodupbamfile)
     
-    print >> logfile, "line number of inputfile:\t%s" % bamcount(bamfile)
-    print >> logfile, "line number of inputfile after removing duplicated reads:\t%s" % bamcount(nodupbamfile)
-    print >> logfile, "line number of inputfile after removing duplicated and multiple mapped reads:\t%s" % bamcount(nodupuniqbamfile)
+    print >> logfile, "number of input reads:\t%s" % bamcount(bamfile)
+    print >> logfile, "number of mapped reads:\t%s" % bammapped(bamfile)
+    print >> logfile, "number of uniquely mapped reads:\t%s" % bamcount(uniqbamfile)
+    print >> logfile, "number of nonredundant reads:\t%s" % bamcount(uniqnodupbamfile)
     logfile.close()
     
-    os.remove(bamfile)
-    os.remove(nodupbamfile)
+    if rmswitch:
+        os.remove(bamfile)
+        os.remove(uniqbamfile)
     
     endtime = time.time()
     print "it takes %.3f minutes or %.3f seconds" % ((endtime-starttime)/60, endtime -starttime)        
