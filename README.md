@@ -54,4 +54,4 @@ for "huex10st","hugene10st","hugene11st","hugene20st","hugene21st"
 
 
 ###other common tools: 
-[bedtools](http://bedtools.readthedocs.org/en/latest/), [samtools](http://samtools.sourceforge.net/), [UCSC Jim Kent utility](http://hgdownload.soe.ucsc.edu/admin/exe/linux.x86_64/), [picard](http://broadinstitute.github.io/picard/)
+[sratoolkit](https://github.com/ncbi/sratoolkit), [bedtools](http://bedtools.readthedocs.org/en/latest/), [samtools](http://samtools.sourceforge.net/), [UCSC Jim Kent utility](http://hgdownload.soe.ucsc.edu/admin/exe/linux.x86_64/), [picard](http://broadinstitute.github.io/picard/)
