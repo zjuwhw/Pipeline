@@ -156,7 +156,13 @@ if __name__ == '__main__':
     STAROpt = "--outSAMtype BAM SortedByCoordinate  --genomeLoad NoSharedMemory  --outFilterMultimapNmax 20  --alignSJoverhangMin 8 --alignSJDBoverhangMin 1  --outFilterMismatchNmax 999 --outFilterMismatchNoverReadLmax 0.04  --alignIntronMin 20 --alignIntronMax 1000000 --alignMatesGapMax 1000000 --outFilterType BySJout  --quantMode TranscriptomeSAM --sjdbScore 1  --limitBAMsortRAM 40000000000 "
     chromsize = "/d/database/hg38/DNAsequence_Ensembl/Homo_sapiens.GRCh38.dna.primary_assembly.fa.chrom.sizes"
     dictfile = "/d/database/hg38/DNAsequence_Ensembl/Homo_sapiens.GRCh38.dna.primary_assembly.fa.dict"
-    prefix = re.sub("_1(P?).(fastq|fq).*", "", os.path.basename(read1))
+    regular = "_[12]\.(fastq|fq)(\.gz)?$"
+    if (not re.search(regular, os.path.basename(read1))) or (not re.search(regular, os.path.basename(read2))):
+        print '''the input fastq file name must obey the regular expression "_[12]\.(fastq|fq)(\.gz)?$"'''
+        sys.exit(1)
+    prefix = re.sub(regular, "", os.path.basename(read1))
+    if os.path.basename(read1).endswith(".gz"):
+        STAROpt += " --readFilesCommand zcat "
     
     for o, a in opts:
         if o == "--tool":
