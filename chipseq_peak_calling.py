@@ -2,13 +2,14 @@
 #date: 2014-12-26
 USAGE='''peak_calling.py --- peak calling for single-end ChIP-seq bam file using MACS and Hpeak software, and output the bigWig and peak region files
 USAGE:
-    python %s [--tools="macs","hpeak"] [--pvalue=#] [--output=#] [--chromsize=#]sample_bam_file control_bam_file(optional)
+    python %s [--tool="macs","hpeak"] [--gsize=#] [--pvalue=#] [--output=#] [--chromsize=#]sample_bam_file control_bam_file(optional)
 
 Default:
-    This pipeline intergated two peak calling software, macs and hpeak. The tools parameter musted be set.
+    This pipeline intergated two peak calling software, macs and hpeak. The tool parameter musted be set.
     For macs, the default p-value is 1e-8, and for hpeak, the default p-value is 1e-4
     For macs, the output are bigWig file and _p_s.bed file; for hpeak, the output is hpeak default output, further process should be made by yourself.
     the chromesize file is /c/wanghw/annotation/hg19.chrom.sizes, which could be downloaded from ucsc website.
+    the option gsize for macs14, Effective genome size. It can be 1.0e+9 or 1000000000,or shortcuts:'hs' for human (2.7e9), 'mm' for mouse(1.87e9), 'ce' for C. elegans (9e7) and 'dm' for                      fruitfly (1.2e8), Default:hs
 
 Note:
     This pipeline needs the software macs, hpeak and ucsc's utility wigToBigWig installed in the PATH
@@ -35,15 +36,15 @@ def macs_wig2bigWig(name, chromsizefile):
     os.system(cmd2)
     cmd3 = "rm -rf %s_MACS_wiggle %s.wig" % (name, name)
     os.system(cmd3)
-def macs_nocontrol(samplebamfile, pvalue, name, chromsize):
-    cmd = "macs14 -t " + samplebamfile + " -p " + str(pvalue) + " -n " + name + " -w --space=10"
+def macs_nocontrol(samplebamfile, pvalue, name, chromsize, gsize):
+    cmd = "macs14 -t " + samplebamfile + " -p " + str(pvalue) + " -n " + name + " -w --space=10 -g " + gsize
     os.system(cmd)
     cmd_rm="rm -f *r *negative*xls *peaks.bed *summits.bed *model.r"
     os.system(cmd_rm)
     macs_xls2psbed(name + "_peaks.xls")
     macs_wig2bigWig(name, chromsize)
-def macs_havecontrol(samplebamfile, controlbamfile, pvalue, name, chromsize):
-    cmd = "macs14 -t " + samplebamfile + " -c " + controlbamfile + " -p " + str(pvalue) + " -n " + name + " -w --space=10"
+def macs_havecontrol(samplebamfile, controlbamfile, pvalue, name, chromsize, gsize):
+    cmd = "macs14 -t " + samplebamfile + " -c " + controlbamfile + " -p " + str(pvalue) + " -n " + name + " -w --space=10 -g " + gsize
     os.system(cmd)
     cmd_rm="rm -f *r *negative*xls *peaks.bed *summits.bed *model.r"
     os.system(cmd_rm)
@@ -89,21 +90,22 @@ if __name__ == '__main__':
         print USAGE % sys.argv[0]
         sys.exit(1)
     
-    opts, args = getopt.getopt(sys.argv[1:], "", ["tools=","pvalue=","output="])
+    opts, args = getopt.getopt(sys.argv[1:], "", ["tool=","pvalue=","output=","gsize=", "chromsize="])
     if len(args) > 2:
         print "you can only input 1-2 bam file"
         sys.exit(1)
-    if (('--tools','macs') not in opts) and (('--tools','hpeak') not in opts):
-        print "the parameter tools must be set, and only the macs or hpeak could be used"
+    if (('--tool','macs') not in opts) and (('--tool','hpeak') not in opts):
+        print "the parameter tool must be set, and only the macs or hpeak could be used"
         sys.exit(1)
     
     # defaults
     def_pval={"macs": "1e-8", "hpeak": "1e-4"}
     nname = os.path.basename(args[0]).replace(".bam","")
     chrom_size = "/c/wanghw/annotation/hg19.chrom.sizes"
+    gsize = "hs"
     
     for o,a in opts:
-        if o == '--tools':
+        if o == '--tool':
             ntype = a
             npvalue = def_pval[a]
         elif o == '--pvalue':
@@ -112,12 +114,14 @@ if __name__ == '__main__':
             nname = a
         elif o == '--chromsize':
             chrom_size = a
+        elif o == '--gsize':
+            gsize = a
     print r'''#########''', args[0], npvalue, nname, chrom_size, r'''##############'''
     
     if len(args) == 2 and ntype == "macs":
-        macs_havecontrol(args[0], args[1], npvalue, nname, chrom_size)
+        macs_havecontrol(args[0], args[1], npvalue, nname, chrom_size, gsize)
     elif len(args) == 1 and ntype == "macs":
-        macs_nocontrol(args[0], npvalue, nname, chrom_size)
+        macs_nocontrol(args[0], npvalue, nname, chrom_size, gsize)
     elif len(args) == 2 and ntype == "hpeak":
         hpeak_havecontrol(args[0], args[1], npvalue, nname)
     elif len(args) == 1 and ntype == "hpeak":
