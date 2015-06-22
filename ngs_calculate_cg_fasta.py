@@ -1,7 +1,7 @@
 #inputfasta
 import os, sys
 inputfasta = sys.argv[1]
-output = sys.argv[1].replace(".fa","_fc.txt").replace("fasta","gc.txt")
+output = sys.argv[1].replace(".fa","_gc.txt").replace(".fasta","_gc.txt")
 f = open(inputfasta)
 f1 = open(output, "w")
 switch = True
