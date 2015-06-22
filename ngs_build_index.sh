@@ -68,7 +68,7 @@ python calculate_cg_fasta.py ${DNAREF}.rna.fasta
 
 #rRNA interval list for picard.CollectRnaSeqMetrics using code from
 #https://gist.github.com/slowkow/b11c28796508f03cdf4b; https://www.biostars.org/p/120145/
-perl -lane 'print "\@SQ\tSN:$F[0]\tLN:$F[1]\tAS:hg38"' ${DNAREF}.chrom.sizes > ${GTF%gtf}.rRNA.interval_list
+perl -lane 'print "\@SQ\tSN:$F[0]\tLN:$F[1]\tAS:hg38"' ${DNAREF}.chrom.sizes > ${GTF%gtf}.rRNA.interval.list
 
 grep 'gene_biotype "rRNA"' $GTF |\
 awk '$3=="transcript"' |\
