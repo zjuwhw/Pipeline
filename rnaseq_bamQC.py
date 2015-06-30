@@ -28,25 +28,35 @@ def mkdir(foldername):
     if not os.path.exists(foldername):
         os.mkdir(foldername)
 def samstat(inputbam, prefix):
-    print "#########samstat is beginning ..."
+    starttime_samstat=time.time()
+    print "#########samstat is beginning ..."    
     mkdir(prefix+"_samstat")
     os.system("samstat %s" % inputbam)
-    os.system("mv %s %s" % (inputbam+".samstat.html", prefix+"_samstat"))
+    os.system("mv %s %s" % (inputbam+".samstat.html", prefix+"_samstat"))    
+    endtime_samstat = time.time()
+    print "the samstat step takes %.3f minutes or %.3f seconds" % ((endtime_samstat - starttime_samstat)/60, endtime_samstat -starttime_samstat)
     
 def picard(inputbam, prefix, generefFlat, rRNA_interval_list, picard_strandness):
-    print "#########picard-collectrnaseqmetrics is beginning ..."
+    starttime_picard=time.time()
+    print "#########picard-collectrnaseqmetrics is beginning ..."    
     mkdir(prefix+"_rnaseqmetrics")
     cmd = "picard CollectRnaSeqMetrics REF_FLAT=%s RIBOSOMAL_INTERVALS=%s STRAND_SPECIFICITY=%s MINIMUM_LENGTH=100 CHART_OUTPUT=%s INPUT=%s OUTPUT=%s" % (generefFlat, rRNA_interval_list, picard_strandness, prefix+".picard_output.pdf", inputbam, prefix+".picard_output.txt")
     os.system(cmd)
     os.system("mv %s %s" % (prefix+".picard_output.pdf", prefix+"_rnaseqmetrics"))
-    os.system("mv %s %s" % (prefix+".picard_output.txt", prefix+"_rnaseqmetrics"))
+    os.system("mv %s %s" % (prefix+".picard_output.txt", prefix+"_rnaseqmetrics"))    
+    endtime_picard = time.time()
+    print "the picard-collectrnaseqmetrics step takes %.3f minutes or %.3f seconds" % ((endtime_picard - starttime_picard)/60, endtime_picard -starttime_picard)
 
 def rnaseqc(inputbam, prefix, dnaref, genegtf, rRNA_interval_list):
+    starttime_rnaseqc=time.time()
     print "#########rnaseqqc is beginning ..."
     cmd = '''rnaseqc -r %s -s "XXX|%s|XXX" -t %s -o %s -rRNA %s''' % (dnaref, inputbam, genegtf, prefix+"_rnaseqc", rRNA_interval_list)
     os.system(cmd)
+    endtime_rnaseqc = time.time()
+    print "the rnaseqc step takes %.3f minutes or %.3f seconds" % ((endtime_rnaseqc - starttime_rnaseqc)/60, endtime_rnaseqc -starttime_rnaseqc)
 
 def rseqc(inputbam, prefix, genebed, rseqc_strandness):
+    starttime_rseqc=time.time()
     print "#########rseqc is beginning ..."
     mkdir(prefix+"_rseqc")
     
@@ -81,7 +91,9 @@ def rseqc(inputbam, prefix, genebed, rseqc_strandness):
     print "#########rseqc-RPKM_saturation.py is beginning ..."
     cmd8 = 'RPKM_saturation.py -d "%s" -r %s -i %s -o %s' % (rseqc_strandness, genebed, inputbam, prefix+"_rseqc/"+prefix + ".RPKM_saturation")
     os.system(cmd8)
-
+    endtime_rseqc = time.time()
+    print "the rseqc step takes %.3f minutes or %.3f seconds" % ((endtime_rseqc - starttime_rseqc)/60, endtime_rseqc -starttime_rseqc)
+    
     
 if __name__ == '__main__':
     starttime=time.time()
@@ -150,5 +162,7 @@ if __name__ == '__main__':
     if switch_tools["rnaseqc"]:
         rnaseqc(inputbam, prefix, dnaref, genegtf, rRNA_interval_list)
     if switch_tools["rseqc"]:
-        rseqc(inputbam, prefix, genebed, rseqc_strandness)  
-        
+        rseqc(inputbam, prefix, genebed, rseqc_strandness)
+    
+    endtime = time.time()
+    print "it takes %.3f minutes or %.3f seconds" % ((endtime-starttime)/60, endtime -starttime)
