@@ -50,6 +50,7 @@ hisat-build ${dir}/hisatindex/${basename} ${dir}/hisatindex/${basename%.fa}
 echo "building RSEM index ..."
 mkdir ${dir}/rsemindex
 rsem-prepare-reference --gtf $GTF $DNAREF ${dir}/rsemindex/resm
+rsem-generate-ngvector /d/database/hg38/DNAsequence_Ensembl/rsemindex/resm.transcripts.fa ${dir}/rsemindex/resm
 
 #fasta index for samtools and bedtools
 samtools faidx $DNAREF
