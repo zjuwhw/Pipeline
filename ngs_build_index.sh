@@ -46,6 +46,11 @@ mkdir ${dir}/hisatindex
 ln -s $DNAREF ${dir}/hisatindex/
 hisat-build ${dir}/hisatindex/${basename} ${dir}/hisatindex/${basename%.fa}
 
+#rsem index
+echo "building RSEM index ..."
+mkdir ${dir}/rsemindex
+rsem-prepare-reference --gtf $GTF $DNAREF ${dir}/rsemindex/resm
+
 #fasta index for samtools and bedtools
 samtools faidx $DNAREF
 
