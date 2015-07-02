@@ -54,6 +54,11 @@ def STAR(read1, read2, STAROpt, thread, prefix, SI):
     os.system(cmd1)
     cmd2 = "STAR %s --runThreadN %d --genomeDir %s --readFilesIn %s %s --outFileNamePrefix %s" % (STAROpt, thread, SI, read1, read2, prefix+"_STAR/")
     os.system(cmd2)
+    if not os.path.exists(prefix+"_BamandSignal"):
+        os.mkdir(prefix+"_BamandSignal")
+    os.system("ln -s ../%s_STAR/Log.final.out %s_BamandSignal/%s_STAR.final.log" % (prefix,prefix, prefix))
+    os.system("ln -s ../%s_STAR/Aligned.toTranscriptome.out.bam %s_BamandSignal/%s_STAR.transcriptome.bam" % (prefix, prefix, prefix))
+    
 def bam_to_bigWig_stranded(inputbam, prefix, chromsize):
     print "### convert stranded bam file to bigWig file ..."
     cmd1 = "STAR --runMode inputAlignmentsFromBAM --inputBAMfile %s --outWigType bedGraph --outWigStrand Stranded --outFileNamePrefix  %s/ --outWigNorm RPM" % (inputbam, os.path.dirname(inputbam))
